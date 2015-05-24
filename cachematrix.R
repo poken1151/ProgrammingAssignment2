@@ -69,16 +69,21 @@ cacheSolve <- function(x, ...) {
 	}
 	
 	data <- x$get()
-	dtrmnt <- det(data)
+	dtrmnt <- determinant(data)$modulus[1]
 	x$setDet(dtrmnt)	
 	
-	if(dtrmnt < 0.0000001 && dtrmnt > -0.0000001) {
+	if(is.infinite(dtrmnt)) {
 		message("System is computationally singular OR exactly singular")
 		x$setInverse(NA)
 		return(NA)
-	}
+	}	
 	
-	result <- solve(data, ...)
+	result <- tryCatch(solve(data, ...), error= function(err) {
+			message(err)
+			x$setInverse(NA)
+			return(NA)
+	})
+	
 	x$setInverse(result)
 	
 	result
